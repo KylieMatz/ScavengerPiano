@@ -77,3 +77,294 @@
     /* Reveal screen */
     .done {
       display: none;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+    .card {
+      width: min(900px, 94vw);
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 18px;
+      font-size: clamp(22px, 3.2vw, 32px);
+      font-weight: 850;
+      line-height: 1.25;
+      text-align: center;
+      text-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    /* Piano */
+    .piano {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: var(--pianoPad);
+      background: rgba(8,8,10,0.78);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.14);
+    }
+    .piano-inner {
+      max-width: 980px;
+      margin: 0 auto;
+      position: relative;
+      height: var(--keyH);
+    }
+    .white-keys {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+      height: 100%;
+    }
+    .white {
+      position: relative;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.45);
+      background: linear-gradient(#ffffff, #ececf2);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      overflow: hidden;
+    }
+
+    .white.active-green { outline: 4px solid rgba(44, 198, 110, 0.95); }
+    .white.active-red   { outline: 4px solid rgba(255, 77, 77, 0.95); }
+
+    /* Start indicator: pulsing glow + arrow */
+    .start-pulse {
+      animation: pulse 1.15s infinite;
+    }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(44,198,110,0.0); }
+      40%  { box-shadow: 0 0 0 10px rgba(44,198,110,0.22); }
+      100% { box-shadow: 0 0 0 0 rgba(44,198,110,0.0); }
+    }
+    .start-arrow {
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 18px solid rgba(44,198,110,0.95);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+      pointer-events: none;
+    }
+
+    /* Black keys (kept for realism; not needed for this tune, but fine) */
+    .black-keys { position: absolute; left: 0; right: 0; top: 0; height: 60%; pointer-events: none; }
+    .black {
+      pointer-events: auto;
+      position: absolute;
+      width: 10.5%;
+      height: 100%;
+      border-radius: 12px;
+      background: linear-gradient(#2a2a2f, #0d0d10);
+      border: 1px solid rgba(255,255,255,0.10);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .black.active-green { outline: 4px solid rgba(44, 198, 110, 0.95); }
+    .black.active-red   { outline: 4px solid rgba(255, 77, 77, 0.95); }
+    .b-cs { left: 8.25%; } .b-ds { left: 20.75%; } .b-fs { left: 45.75%; } .b-gs { left: 58.25%; } .b-as { left: 70.75%; }
+  </style>
+</head>
+
+<body>
+  <!-- Snow layer -->
+  <div class="snow" id="snow"></div>
+
+  <div class="wrap">
+    <div class="lyrics-area" id="playScreen">
+      <div class="lyrics">
+______ _____, ______ _____, ______ ___ ___ ___
+oh what fun it is to ride in a one horse open sleigh!
+      </div>
+    </div>
+
+    <div class="done" id="doneScreen">
+      <div class="card" id="clueText">TEAM 1 CLUE PLACEHOLDER</div>
+    </div>
+  </div>
+
+  <div class="piano" id="pianoBar">
+    <div class="piano-inner">
+      <div class="white-keys">
+        <div class="white" data-note="C4" onclick="press('C4')"></div>
+        <div class="white" data-note="D4" onclick="press('D4')"></div>
+        <div class="white" data-note="E4" onclick="press('E4')"></div>
+        <div class="white" data-note="F4" onclick="press('F4')"></div>
+        <div class="white" data-note="G4" onclick="press('G4')"></div>
+        <div class="white" data-note="A4" onclick="press('A4')"></div>
+        <div class="white" data-note="B4" onclick="press('B4')"></div>
+        <div class="white" data-note="C5" onclick="press('C5')"></div>
+      </div>
+
+      <div class="black-keys">
+        <div class="black b-cs" data-note="C#4" onclick="press('C#4')"></div>
+        <div class="black b-ds" data-note="D#4" onclick="press('D#4')"></div>
+        <div class="black b-fs" data-note="F#4" onclick="press('F#4')"></div>
+        <div class="black b-gs" data-note="G#4" onclick="press('G#4')"></div>
+        <div class="black b-as" data-note="A#4" onclick="press('A#4')"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== Put your real revealed clue here later ======
+  const REVEALED_CLUE = "TEAM 1 CLUE PLACEHOLDER — replace with your next location/clue text.";
+  document.getElementById("clueText").textContent = REVEALED_CLUE;
+
+  // ====== Jingle Bells opening (11 notes) ======
+  // E E E | E E E | E G C D E
+  const TARGET = ["E4","E4","E4","E4","E4","E4","E4","G4","C4","D4","E4"];
+
+  // ====== Snow generator ======
+  (function makeSnow(){
+    const snow = document.getElementById("snow");
+    const flakes = 34; // good density for phones
+    for (let i = 0; i < flakes; i++) {
+      const f = document.createElement("div");
+      f.className = "flake";
+      const left = Math.random() * 100;
+      const size = 3 + Math.random() * 6;
+      const dur = 6 + Math.random() * 8;
+      const dx  = (Math.random() * 60 - 30) + "vw";
+      const delay = (-Math.random() * dur) + "s";
+      f.style.left = left + "vw";
+      f.style.width = size + "px";
+      f.style.height = size + "px";
+      f.style.setProperty("--dx", dx);
+      f.style.animationDuration = dur + "s";
+      f.style.animationDelay = delay;
+      f.style.opacity = (0.35 + Math.random() * 0.55).toFixed(2);
+      snow.appendChild(f);
+    }
+  })();
+
+  // ====== Piano sound (SoundFont) with safe fallback ======
+  let audioCtx = null;
+  let piano = null;
+  let pianoReady = false;
+
+  async function ensurePiano() {
+    if (pianoReady) return true;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      // iOS sometimes needs resume on first gesture
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+
+      piano = await Soundfont.instrument(audioCtx, "acoustic_grand_piano", {
+        soundfont: "FluidR3_GM",
+        gain: 0.8
+      });
+      pianoReady = true;
+      return true;
+    } catch (e) {
+      pianoReady = false;
+      return false;
+    }
+  }
+
+  // Fallback beep if SoundFont fails to load for any reason
+  const freq = {
+    "C4":261.63,"C#4":277.18,"D4":293.66,"D#4":311.13,"E4":329.63,"F4":349.23,"F#4":369.99,
+    "G4":392.00,"G#4":415.30,"A4":440.00,"A#4":466.16,"B4":493.88,"C5":523.25
+  };
+
+  function fallbackTone(note, ms=160) {
+    const ac = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx = ac;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = "triangle";
+    o.frequency.value = freq[note] ?? 440;
+    const now = ac.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.16, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + ms/1000);
+    o.connect(g); g.connect(ac.destination);
+    o.start(now);
+    o.stop(now + ms/1000 + 0.03);
+  }
+
+  async function play(note) {
+    const ok = await ensurePiano();
+    if (ok && piano) {
+      // Soundfont-player uses scientific pitch notation (C4, etc.)
+      piano.play(note, audioCtx.currentTime, { duration: 0.35, gain: 0.9 });
+    } else {
+      fallbackTone(note);
+    }
+  }
+
+  // ====== UI helpers ======
+  let i = 0;
+
+  function keyEl(note) {
+    return document.querySelector(`[data-note="${CSS.escape(note)}"]`);
+  }
+
+  function flash(note, cls, duration=420) {
+    const el = keyEl(note);
+    if (!el) return;
+    el.classList.add(cls);
+    setTimeout(() => el.classList.remove(cls), duration);
+  }
+
+  function setStartIndicator(note) {
+    document.querySelectorAll(".start-arrow").forEach(x => x.remove());
+    document.querySelectorAll(".start-pulse").forEach(x => x.classList.remove("start-pulse"));
+
+    const el = keyEl(note);
+    if (!el) return;
+
+    el.classList.add("start-pulse");
+    const arrow = document.createElement("div");
+    arrow.className = "start-arrow";
+    el.appendChild(arrow);
+  }
+
+  setStartIndicator(TARGET[0]);
+
+  // ====== Core puzzle behavior ======
+  async function press(note) {
+    await play(note);
+
+    const expected = TARGET[i];
+
+    if (note === expected) {
+      flash(note, "active-green", 200);
+      i++;
+
+      // remove the start indicator after first correct press
+      if (i === 1) {
+        document.querySelectorAll(".start-arrow").forEach(x => x.remove());
+        document.querySelectorAll(".start-pulse").forEach(x => x.classList.remove("start-pulse"));
+      }
+
+      if (i >= TARGET.length) {
+        unlock();
+      }
+      return;
+    }
+
+    // Wrong: show red and show the correct next note in green, then HARD reset
+    flash(note, "active-red", 450);
+    flash(expected, "active-green", 700);
+    i = 0;
+    setStartIndicator(TARGET[0]);
+  }
+
+  function unlock() {
+    document.getElementById("playScreen").style.display = "none";
+    const done = document.getElementById("doneScreen");
+    done.style.display = "flex";
+    document.getElementById("pianoBar").style.display = "none";
+  }
+</script>
+</body>
+</html>
