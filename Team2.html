@@ -156,17 +156,26 @@ and a Happy New Year!"</div>
   let ac=null;
   const freq={"C4":261.63,"C#4":277.18,"D4":293.66,"D#4":311.13,"E4":329.63,"F4":349.23,"F#4":369.99,"G4":392.00,"G#4":415.30,"A4":440.00,"A#4":466.16,"B4":493.88,"C5":523.25};
   function ensureAC(){ if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); }
-  function play(note,ms=150){
-    ensureAC();
-    const o=ac.createOscillator(), g=ac.createGain();
-    o.type="triangle"; o.frequency.value=freq[note] ?? 440;
-    const now=ac.currentTime;
-    g.gain.setValueAtTime(0.0001,now);
-    g.gain.exponentialRampToValueAtTime(0.14,now+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001,now+ms/1000);
-    o.connect(g); g.connect(ac.destination);
-    o.start(now); o.stop(now+ms/1000+0.03);
-  }
+ function play(note,ms=220){
+  ensureAC();
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+
+  o.type = "triangle";
+  o.frequency.value = freq[note] ?? 440;
+
+  const now = ac.currentTime;
+
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(0.22, now + 0.02);   // louder
+  g.gain.exponentialRampToValueAtTime(0.0001, now + ms/1000);
+
+  o.connect(g);
+  g.connect(ac.destination);
+
+  o.start(now);
+  o.stop(now + ms/1000 + 0.05);
+}
 
   // Progress + UI
   let idx=0;
