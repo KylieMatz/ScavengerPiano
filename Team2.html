@@ -39,7 +39,14 @@
   .wrap{ min-height:100svh; display:flex; flex-direction:column;
     padding-bottom: calc(var(--keyH) + 24px); box-sizing:border-box; position:relative; z-index:2;
   }
-  .lyrics-area{ flex:1; display:flex; align-items:center; justify-content:center; padding:18px; box-sizing:border-box; }
+.lyrics-area{
+  flex: 1;
+  display: flex;
+  align-items: center;      /* vertical center */
+  justify-content: center;  /* horizontal center */
+  padding: 18px;
+  box-sizing: border-box;
+}
   .lyrics{
     width:min(900px,94vw); background:rgba(0,0,0,0.18); border:1px solid rgba(255,255,255,0.22);
     border-radius:22px; padding:20px 18px;
