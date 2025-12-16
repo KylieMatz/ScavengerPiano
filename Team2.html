@@ -98,13 +98,11 @@
 
 <div class="wrap">
   <div class="lyrics-area" id="playScreen">
-    <div class="lyrics">______ _____, ______ _____, ______ ___ ___ ___
-oh what fun it is to ride in a one horse open sleigh!</div>
+    <div class="lyrics">"__ ____ ___ _ _____ _________, __ ____ ___ _ _____ _________,
+We wish you a merry Christmas,
+and a Happy New Year!"</div>
   </div>
-
-  <div class="done" id="doneScreen">
-    <div class="card" id="clueText">TEAM 1 CLUE PLACEHOLDER</div>
-  </div>
+  <div class="done" id="doneScreen"><div class="card" id="clueText">TEAM 2 CLUE PLACEHOLDER</div></div>
 </div>
 
 <div class="piano" id="pianoBar">
@@ -130,54 +128,40 @@ oh what fun it is to ride in a one horse open sleigh!</div>
 </div>
 
 <script>
-  // put real clue later
-  document.getElementById("clueText").textContent = "TEAM 1 CLUE PLACEHOLDER — replace with your next clue.";
+  document.getElementById("clueText").textContent = "TEAM 2 CLUE PLACEHOLDER — replace with your next clue.";
 
-  // Jingle Bells intro: E E E | E E E | E G C D E
-  const TARGET = ["E4","E4","E4","E4","E4","E4","E4","G4","C4","D4","E4"];
+  // Notes: C F F G F E D D | D G G A G F E C
+  const TARGET = ["C4","F4","F4","G4","F4","E4","D4","D4","D4","G4","G4","A4","G4","F4","E4","C4"];
 
   // Snow
   (function makeSnow(){
-    const snow = document.getElementById("snow");
-    const flakes = 34;
-    for (let i=0;i<flakes;i++){
-      const f=document.createElement("div");
-      f.className="flake";
-      const left=Math.random()*100, size=3+Math.random()*7, dur=6+Math.random()*8;
-      const dx=(Math.random()*60-30)+"vw", delay=(-Math.random()*dur)+"s";
-      f.style.left=left+"vw"; f.style.width=size+"px"; f.style.height=size+"px";
-      f.style.setProperty("--dx",dx);
-      f.style.animationDuration=dur+"s"; f.style.animationDelay=delay;
-      f.style.opacity=(0.30+Math.random()*0.60).toFixed(2);
+    const snow=document.getElementById("snow"), flakes=34;
+    for(let i=0;i<flakes;i++){
+      const f=document.createElement("div"); f.className="flake";
+      const left=Math.random()*100,size=3+Math.random()*7,dur=6+Math.random()*8,dx=(Math.random()*60-30)+"vw",delay=(-Math.random()*dur)+"s";
+      f.style.left=left+"vw"; f.style.width=size+"px"; f.style.height=size+"px"; f.style.setProperty("--dx",dx);
+      f.style.animationDuration=dur+"s"; f.style.animationDelay=delay; f.style.opacity=(0.30+Math.random()*0.60).toFixed(2);
       snow.appendChild(f);
     }
   })();
 
-  // Audio: fast triangle wave (always works)
+  // Audio (fast triangle wave)
   let ac=null;
-  const freq={
-    "C4":261.63,"C#4":277.18,"D4":293.66,"D#4":311.13,"E4":329.63,"F4":349.23,"F#4":369.99,
-    "G4":392.00,"G#4":415.30,"A4":440.00,"A#4":466.16,"B4":493.88,"C5":523.25
-  };
-  function ensureAC(){
-    if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)();
-    if(ac.state==="suspended") ac.resume();
-  }
-  function play(note, ms=150){
+  const freq={"C4":261.63,"C#4":277.18,"D4":293.66,"D#4":311.13,"E4":329.63,"F4":349.23,"F#4":369.99,"G4":392.00,"G#4":415.30,"A4":440.00,"A#4":466.16,"B4":493.88,"C5":523.25};
+  function ensureAC(){ if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); }
+  function play(note,ms=150){
     ensureAC();
-    const o=ac.createOscillator();
-    const g=ac.createGain();
-    o.type="triangle";
-    o.frequency.value=freq[note] ?? 440;
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type="triangle"; o.frequency.value=freq[note] ?? 440;
     const now=ac.currentTime;
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(0.14, now+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, now+ms/1000);
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(0.14,now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+ms/1000);
     o.connect(g); g.connect(ac.destination);
     o.start(now); o.stop(now+ms/1000+0.03);
   }
 
-  // UI helpers
+  // Progress + UI
   let idx=0;
   function keyEl(note){ return document.querySelector(`[data-note="${CSS.escape(note)}"]`); }
 
@@ -201,17 +185,15 @@ oh what fun it is to ride in a one horse open sleigh!</div>
     const id=setInterval(()=>{
       el.classList.toggle(cls);
       t++;
-      if(t>=times*2){
-        el.classList.remove(cls);
-        clearInterval(id);
-      }
+      if(t>=times*2){ el.classList.remove(cls); clearInterval(id); }
     }, interval);
   }
 
   function press(note){
     play(note);
-    const expected=TARGET[idx];
-    if(note===expected){
+    const expected = TARGET[idx];
+
+    if(note === expected){
       if(idx===0) clearStartIndicator(TARGET[0]);
       const el=keyEl(note);
       if(el){ el.classList.add("active-green"); setTimeout(()=>el.classList.remove("active-green"),160); }
@@ -219,6 +201,7 @@ oh what fun it is to ride in a one horse open sleigh!</div>
       if(idx>=TARGET.length) unlock();
       return;
     }
+
     blink(note,"active-red",3,140);
     blink(expected,"active-green",3,140);
     idx=0;
