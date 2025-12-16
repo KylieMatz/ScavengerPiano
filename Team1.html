@@ -13,9 +13,9 @@
       --keyH: 28vh;
       --pianoPad: 12px;
 
-      /* Muted, classy Christmas tones (edit these if you want) */
-      --xmasRed:  #8B1D2C;  /* muted cranberry */
-      --xmasGreen:#0E5137;  /* muted pine */
+      /* Muted, blended Christmas stripes */
+      --xmasRed:  #8B1D2C;
+      --xmasGreen:#0E5137;
     }
 
     body{
@@ -31,10 +31,10 @@
         radial-gradient(900px 650px at 80% 20%, rgba(255,255,255,0.10), rgba(255,255,255,0) 62%),
         repeating-linear-gradient(
           135deg,
-          color-mix(in srgb, var(--xmasRed) 78%, black 22%) 0px,
-          color-mix(in srgb, var(--xmasRed) 78%, black 22%) 140px,
-          color-mix(in srgb, var(--xmasGreen) 78%, black 22%) 140px,
-          color-mix(in srgb, var(--xmasGreen) 78%, black 22%) 280px
+          color-mix(in srgb, var(--xmasRed) 70%, black 30%) 0px,
+          color-mix(in srgb, var(--xmasRed) 70%, black 30%) 170px,
+          color-mix(in srgb, var(--xmasGreen) 70%, black 30%) 170px,
+          color-mix(in srgb, var(--xmasGreen) 70%, black 30%) 340px
         );
       position: relative;
     }
@@ -43,18 +43,18 @@
     body::before{
       content:"";
       position:fixed;
-      inset:-40px;
+      inset:-50px;
       background:
         linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.10)),
         radial-gradient(1200px 900px at 30% 30%, rgba(255,255,255,0.08), rgba(255,255,255,0) 55%),
         radial-gradient(1200px 900px at 70% 60%, rgba(255,255,255,0.06), rgba(255,255,255,0) 58%);
-      filter: blur(16px);
+      filter: blur(18px);
       opacity: 0.95;
       pointer-events:none;
       z-index:0;
     }
 
-    /* Snow */
+    /* Falling snow */
     .snow{ position:fixed; inset:0; pointer-events:none; opacity:0.95; z-index:1; }
     .flake{
       position:absolute; top:-10vh;
@@ -115,6 +115,37 @@
       backdrop-filter: blur(6px);
     }
 
+    /* Start screen */
+    .start-screen{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+    .start-card{
+      background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,255,255,0.25);
+      border-radius:22px;
+      padding:28px 26px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.35);
+    }
+    #startBtn{
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 900;
+      padding:16px 26px;
+      border-radius:16px;
+      border:none;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(135deg, #1FA971, #0F6A44);
+      box-shadow:0 8px 20px rgba(0,0,0,0.35);
+    }
+    #startBtn:active{ transform: scale(0.97); }
+
     /* Piano */
     .piano{
       position:fixed; left:0; right:0; bottom:0;
@@ -168,7 +199,7 @@
       pointer-events:none;
     }
 
-    /* Black keys */
+    /* Black keys (optional) */
     .black-keys{ position:absolute; left:0; right:0; top:0; height:60%; pointer-events:none; }
     .black{
       pointer-events:auto;
@@ -184,15 +215,18 @@
     .black.active-green{ outline:4px solid rgba(44,198,110,0.98); }
     .black.active-red{   outline:4px solid rgba(255,50,70,0.98); }
     .b-cs{ left:8.25%; } .b-ds{ left:20.75%; } .b-fs{ left:45.75%; } .b-gs{ left:58.25%; } .b-as{ left:70.75%; }
-
-    /* While loading samples, prevent tapping keys (piano-only means no sound until ready) */
-    .keys-disabled .white,
-    .keys-disabled .black { pointer-events:none; opacity: 0.92; }
   </style>
 </head>
 
 <body>
   <div class="snow" id="snow"></div>
+
+  <!-- Start screen -->
+  <div id="startScreen" class="start-screen">
+    <div class="start-card">
+      <button id="startBtn">Tap here for your next clue 🎄</button>
+    </div>
+  </div>
 
   <div class="wrap">
     <div class="lyrics-area" id="playScreen">
@@ -207,7 +241,7 @@ oh what fun it is to ride in a one horse open sleigh!
     </div>
   </div>
 
-  <div class="piano keys-disabled" id="pianoBar">
+  <div class="piano" id="pianoBar">
     <div class="piano-inner">
       <div class="white-keys">
         <div class="white" data-note="C4" onclick="press('C4')"></div>
@@ -231,13 +265,14 @@ oh what fun it is to ride in a one horse open sleigh!
   </div>
 
 <script>
+  // Put your real revealed clue here later
   document.getElementById("clueText").textContent =
     "TEAM 1 CLUE PLACEHOLDER — replace with your next location/clue text.";
 
   // Jingle Bells opening (11 notes): E E E | E E E | E G C D E
   const TARGET = ["E4","E4","E4","E4","E4","E4","E4","G4","C4","D4","E4"];
 
-  // Snow
+  // Snow generation
   (function makeSnow(){
     const snow = document.getElementById("snow");
     const flakes = 34;
@@ -260,58 +295,51 @@ oh what fun it is to ride in a one horse open sleigh!
     }
   })();
 
-  // ===== Piano-only audio (no fallback) =====
+  // Piano sampler (piano-only, no failsafe)
   let sampler = null;
   let samplerReady = false;
-  let loading = false;
+  let loadingPromise = null;
 
-  async function ensureSamplerReady() {
-    if (samplerReady) return true;
-    if (loading) {
-      // wait until ready
-      while (!samplerReady) await new Promise(r => setTimeout(r, 60));
-      return true;
-    }
-    loading = true;
+  function loadSampler() {
+    if (samplerReady) return Promise.resolve();
+    if (loadingPromise) return loadingPromise;
 
-    await Tone.start(); // must be triggered by user gesture
+    loadingPromise = (async () => {
+      await Tone.start(); // MUST be user-triggered (start button)
+      sampler = new Tone.Sampler({
+        urls: {
+          "C4":"C4.mp3",
+          "C#4":"Cs4.mp3",
+          "D4":"D4.mp3",
+          "D#4":"Ds4.mp3",
+          "E4":"E4.mp3",
+          "F4":"F4.mp3",
+          "F#4":"Fs4.mp3",
+          "G4":"G4.mp3",
+          "G#4":"Gs4.mp3",
+          "A4":"A4.mp3",
+          "A#4":"As4.mp3",
+          "B4":"B4.mp3",
+          "C5":"C5.mp3"
+        },
+        release: 0.9,
+        baseUrl: "https://tonejs.github.io/audio/salamander/"
+      }).toDestination();
 
-    sampler = new Tone.Sampler({
-      urls: {
-        "C4":"C4.mp3",
-        "C#4":"Cs4.mp3",
-        "D4":"D4.mp3",
-        "D#4":"Ds4.mp3",
-        "E4":"E4.mp3",
-        "F4":"F4.mp3",
-        "F#4":"Fs4.mp3",
-        "G4":"G4.mp3",
-        "G#4":"Gs4.mp3",
-        "A4":"A4.mp3",
-        "A#4":"As4.mp3",
-        "B4":"B4.mp3",
-        "C5":"C5.mp3"
-      },
-      release: 0.9,
-      baseUrl: "https://tonejs.github.io/audio/salamander/"
-    }).toDestination();
+      await Tone.loaded();
+      sampler.volume.value = -7;
+      samplerReady = true;
+    })();
 
-    await Tone.loaded();
-    sampler.volume.value = -7;
-
-    samplerReady = true;
-    loading = false;
-
-    // enable key presses once we have real piano audio
-    document.getElementById("pianoBar").classList.remove("keys-disabled");
-    return true;
+    return loadingPromise;
   }
 
-  function playPiano(note) {
+  function playPiano(note){
+    if (!samplerReady || !sampler) return;
     sampler.triggerAttackRelease(note, "8n");
   }
 
-  // UI helpers
+  // Start indicator helpers
   let i = 0;
 
   function keyEl(note) {
@@ -327,7 +355,6 @@ oh what fun it is to ride in a one horse open sleigh!
 
     el.classList.add("active-green");
     el.classList.add("start-pulse");
-
     const arrow = document.createElement("div");
     arrow.className = "start-arrow";
     el.appendChild(arrow);
@@ -357,9 +384,10 @@ oh what fun it is to ride in a one horse open sleigh!
     }, interval);
   }
 
+  // Key press logic (audio assumes preloaded from start button)
   async function press(note) {
-    // First-ever tap will load samples; until loaded, we do nothing (piano-only).
-    await ensureSamplerReady();
+    if (!samplerReady) return; // piano-only: no sound until start button loads
+
     playPiano(note);
 
     const expected = TARGET[i];
@@ -391,10 +419,16 @@ oh what fun it is to ride in a one horse open sleigh!
     document.getElementById("pianoBar").style.display = "none";
   }
 
-  // Optional: preload on first touch anywhere (helps before they start tapping keys)
-  // Doesn’t show extra text; just improves readiness.
-  document.addEventListener("touchstart", () => { ensureSamplerReady().catch(()=>{}); }, { once:true, passive:true });
-  document.addEventListener("click", () => { ensureSamplerReady().catch(()=>{}); }, { once:true });
+  // Start button: unlock audio + preload samples, then hide overlay
+  document.getElementById("startBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("startBtn");
+    btn.textContent = "Loading…";
+    btn.disabled = true;
+
+    await loadSampler();
+
+    document.getElementById("startScreen").style.display = "none";
+  });
 </script>
 </body>
 </html>
