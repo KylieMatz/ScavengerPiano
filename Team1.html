@@ -17,7 +17,6 @@
       color:#fff;
       min-height:100svh;
       overflow:hidden;
-      /* Brighter red/green soft stripes + glow */
       background:
         radial-gradient(900px 650px at 20% 10%, rgba(255,255,255,0.18), rgba(255,255,255,0) 60%),
         radial-gradient(900px 650px at 80% 20%, rgba(255,255,255,0.14), rgba(255,255,255,0) 62%),
@@ -30,22 +29,22 @@
         );
       position: relative;
     }
-
-    /* Soft-edge stripe blend overlay (makes stripes less harsh) */
     body::before{
       content:"";
       position:fixed;
       inset:-30px;
       background:
-        radial-gradient(1200px 900px at 30% 30%, rgba(255,255,255,0.12), rgba(255,255,255,0) 55%),
-        radial-gradient(1200px 900px at 70% 60%, rgba(255,255,255,0.10), rgba(255,255,255,0) 58%),
-        linear-gradient(135deg, rgba(255,255,255,0.08), rgba(0,0,0,0.06));
+    radial-gradient(1200px 900px at 30% 30%, rgba(215,38,61,0.14), rgba(255,255,255,0) 55%), /* cranberry */
+    radial-gradient(1200px 900px at 70% 60%, rgba(31,169,113,0.12), rgba(255,255,255,0) 58%), /* spruce */
+    linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.08));
+}
+
       filter: blur(10px);
       pointer-events:none;
       z-index:0;
     }
 
-    /* Falling snow */
+    /* Snow */
     .snow{ position:fixed; inset:0; pointer-events:none; opacity:0.95; z-index:1; }
     .flake{
       position:absolute; top:-10vh;
@@ -86,7 +85,6 @@
       backdrop-filter: blur(6px);
     }
 
-    /* Reveal screen */
     .done{
       display:none;
       flex:1;
@@ -107,7 +105,6 @@
       backdrop-filter: blur(6px);
     }
 
-    /* Piano */
     .piano{
       position:fixed; left:0; right:0; bottom:0;
       padding:var(--pianoPad);
@@ -137,11 +134,9 @@
       touch-action: manipulation;
       overflow:hidden;
     }
-
     .white.active-green{ outline:4px solid rgba(44,198,110,0.98); }
     .white.active-red{   outline:4px solid rgba(255,50,70,0.98); }
 
-    /* Start indicator */
     .start-pulse{ animation: pulse 1.05s infinite; }
     @keyframes pulse{
       0%   { box-shadow: 0 0 0 0 rgba(44,198,110,0.0); }
@@ -161,7 +156,6 @@
       pointer-events:none;
     }
 
-    /* Black keys (optional) */
     .black-keys{ position:absolute; left:0; right:0; top:0; height:60%; pointer-events:none; }
     .black{
       pointer-events:auto;
@@ -225,7 +219,6 @@ oh what fun it is to ride in a one horse open sleigh!
     "TEAM 1 CLUE PLACEHOLDER — replace with your next location/clue text.";
 
   // ====== Jingle Bells opening (11 notes) ======
-  // E E E | E E E | E G C D E
   const TARGET = ["E4","E4","E4","E4","E4","E4","E4","G4","C4","D4","E4"];
 
   // ====== Snow ======
@@ -251,10 +244,7 @@ oh what fun it is to ride in a one horse open sleigh!
     }
   })();
 
-  // ====== Audio: Real samples with a NO-WAIT failsafe fallback ======
-  // Key rule: never block audio. If samples aren't ready quickly, play a soft fallback tone immediately.
-
-  // Fallback tone (soft, quick)
+  // ====== Audio: Real samples for ALL notes C4..C5 chromatic + failsafe ======
   let fallbackCtx = null;
   const freq = {
     "C4":261.63,"C#4":277.18,"D4":293.66,"D#4":311.13,"E4":329.63,"F4":349.23,"F#4":369.99,
@@ -277,22 +267,34 @@ oh what fun it is to ride in a one horse open sleigh!
     o.stop(now + ms/1000 + 0.03);
   }
 
-  // Sampler (real-ish piano samples)
   let sampler = null;
   let samplerReady = false;
-  let started = false;
   let loadKickoff = false;
+  let started = false;
 
   function kickoffLoadSampler() {
     if (loadKickoff) return;
     loadKickoff = true;
 
-    // Start loading in the background (but don't block UX)
     (async () => {
       try {
-        await Tone.start(); // iOS requires user gesture; our first press() calls playNote() which calls this
+        await Tone.start(); // must be triggered by user gesture; first tap calls playNote()
         sampler = new Tone.Sampler({
-          urls: { "C4":"C4.mp3", "E4":"E4.mp3", "G4":"G4.mp3", "C5":"C5.mp3" },
+          urls: {
+            "C4":"C4.mp3",
+            "C#4":"Cs4.mp3",
+            "D4":"D4.mp3",
+            "D#4":"Ds4.mp3",
+            "E4":"E4.mp3",
+            "F4":"F4.mp3",
+            "F#4":"Fs4.mp3",
+            "G4":"G4.mp3",
+            "G#4":"Gs4.mp3",
+            "A4":"A4.mp3",
+            "A#4":"As4.mp3",
+            "B4":"B4.mp3",
+            "C5":"C5.mp3"
+          },
           release: 0.9,
           baseUrl: "https://tonejs.github.io/audio/salamander/"
         }).toDestination();
@@ -306,20 +308,18 @@ oh what fun it is to ride in a one horse open sleigh!
     })();
   }
 
-  // Play note with a "deadline": if sampler isn't ready quickly, use fallback immediately.
   async function playNote(note) {
-    // First tap: start sampler loading (non-blocking)
     kickoffLoadSampler();
 
-    // If sampler is ready, use it.
+    // If ready, use true sample audio
     if (samplerReady && sampler) {
       try { sampler.triggerAttackRelease(note, "8n"); return; } catch (_) {}
     }
 
-    // If not ready, DON'T wait—play fallback immediately.
+    // Never block: immediate fallback
     fallbackTone(note);
 
-    // Also try to start Tone on first gesture (helps sampler load succeed)
+    // Also try to start Tone (helps sampler load on iOS)
     if (!started) {
       started = true;
       try { await Tone.start(); } catch (_) {}
@@ -334,14 +334,12 @@ oh what fun it is to ride in a one horse open sleigh!
   }
 
   function setStartIndicator(note) {
-    // clear prior indicators
     document.querySelectorAll(".start-arrow").forEach(x => x.remove());
     document.querySelectorAll(".start-pulse").forEach(x => x.classList.remove("start-pulse"));
 
     const el = keyEl(note);
     if (!el) return;
 
-    // Keep it visibly green until first correct press
     el.classList.add("active-green");
     el.classList.add("start-pulse");
 
@@ -358,7 +356,6 @@ oh what fun it is to ride in a one horse open sleigh!
     if (arrow) arrow.remove();
   }
 
-  // Start key highlighted immediately
   setStartIndicator(TARGET[0]);
 
   function blink(note, cls, times=3, interval=140) {
@@ -381,10 +378,8 @@ oh what fun it is to ride in a one horse open sleigh!
     const expected = TARGET[i];
 
     if (note === expected) {
-      // First correct press: remove persistent start highlight/arrow/pulse
       if (i === 0) clearStartIndicator(TARGET[0]);
 
-      // quick confirmation
       const el = keyEl(note);
       if (el) {
         el.classList.add("active-green");
@@ -396,7 +391,6 @@ oh what fun it is to ride in a one horse open sleigh!
       return;
     }
 
-    // Wrong: blink both a few times, then hard reset
     blink(note, "active-red", 3, 140);
     blink(expected, "active-green", 3, 140);
 
