@@ -1,19 +1,20 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Piano Puzzle</title>
-<!-- (Same CSS/structure as Team2; kept identical for consistency) -->
 <style>
   :root{ --keyH:28vh; --pianoPad:12px; --xmasRed:#8B1D2C; --xmasGreen:#0E5137; }
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#fff;min-height:100svh;overflow:hidden;position:relative;
-    background:radial-gradient(900px 650px at 20% 10%, rgba(255,255,255,0.10), rgba(255,255,255,0) 60%),
-             radial-gradient(900px 650px at 80% 20%, rgba(255,255,255,0.08), rgba(255,255,255,0) 62%),
-             repeating-linear-gradient(135deg,
-               color-mix(in srgb, var(--xmasRed) 55%, black 45%) 0px,
-               color-mix(in srgb, var(--xmasRed) 55%, black 45%) 200px,
-               color-mix(in srgb, var(--xmasGreen) 55%, black 45%) 200px,
-               color-mix(in srgb, var(--xmasGreen) 55%, black 45%) 400px);}
+    background:
+      radial-gradient(900px 650px at 20% 10%, rgba(255,255,255,0.10), rgba(255,255,255,0) 60%),
+      radial-gradient(900px 650px at 80% 20%, rgba(255,255,255,0.08), rgba(255,255,255,0) 62%),
+      repeating-linear-gradient(135deg,
+        color-mix(in srgb, var(--xmasRed) 55%, black 45%) 0px,
+        color-mix(in srgb, var(--xmasRed) 55%, black 45%) 200px,
+        color-mix(in srgb, var(--xmasGreen) 55%, black 45%) 200px,
+        color-mix(in srgb, var(--xmasGreen) 55%, black 45%) 400px);}
   body::before{content:"";position:fixed;inset:-60px;z-index:0;pointer-events:none;
     background:radial-gradient(1100px 900px at 25% 25%, rgba(255,255,255,0.06), rgba(255,255,255,0) 60%),
              radial-gradient(1100px 900px at 70% 65%, rgba(255,255,255,0.05), rgba(255,255,255,0) 62%),
@@ -47,94 +48,110 @@
 
 <div class="wrap">
   <div class="lyrics-area" id="playScreen">
-    <div class="lyrics">____ ___ _____ ____ ______ __ _____, __ __ __ __ __, __ __ __ __
-Tis the season to be jolly, Fa la la la la, la la la la.</div>
+    <div class="lyrics">"___ ___ ____ _________ ____ __ ___ ____,
+With the kids jingle belling,
+And everyone telling you be of good cheer,
+it's the most wonderful time of the year!"</div>
   </div>
   <div class="done" id="doneScreen"><div class="card" id="clueText">TEAM 3 CLUE PLACEHOLDER</div></div>
 </div>
 
-<div class="piano" id="pianoBar"><div class="piano-inner">
-  <div class="white-keys">
-    <div class="white" data-note="C4" onclick="press('C4')"></div>
-    <div class="white" data-note="D4" onclick="press('D4')"></div>
-    <div class="white" data-note="E4" onclick="press('E4')"></div>
-    <div class="white" data-note="F4" onclick="press('F4')"></div>
-    <div class="white" data-note="G4" onclick="press('G4')"></div>
-    <div class="white" data-note="A4" onclick="press('A4')"></div>
-    <div class="white" data-note="B4" onclick="press('B4')"></div>
-    <div class="white" data-note="C5" onclick="press('C5')"></div>
+<div class="piano" id="pianoBar">
+  <div class="piano-inner">
+    <div class="white-keys">
+      <div class="white" data-note="C4" onclick="press('C4')"></div>
+      <div class="white" data-note="D4" onclick="press('D4')"></div>
+      <div class="white" data-note="E4" onclick="press('E4')"></div>
+      <div class="white" data-note="F4" onclick="press('F4')"></div>
+      <div class="white" data-note="G4" onclick="press('G4')"></div>
+      <div class="white" data-note="A4" onclick="press('A4')"></div>
+      <div class="white" data-note="B4" onclick="press('B4')"></div>
+      <div class="white" data-note="C5" onclick="press('C5')"></div>
+    </div>
+    <div class="black-keys">
+      <div class="black b-cs" data-note="C#4" onclick="press('C#4')"></div>
+      <div class="black b-ds" data-note="D#4" onclick="press('D#4')"></div>
+      <div class="black b-fs" data-note="F#4" onclick="press('F#4')"></div>
+      <div class="black b-gs" data-note="G#4" onclick="press('G#4')"></div>
+      <div class="black b-as" data-note="A#4" onclick="press('A#4')"></div>
+    </div>
   </div>
-  <div class="black-keys">
-    <div class="black b-cs" data-note="C#4" onclick="press('C#4')"></div>
-    <div class="black b-ds" data-note="D#4" onclick="press('D#4')"></div>
-    <div class="black b-fs" data-note="F#4" onclick="press('F#4')"></div>
-    <div class="black b-gs" data-note="G#4" onclick="press('G#4')"></div>
-    <div class="black b-as" data-note="A#4" onclick="press('A#4')"></div>
-  </div>
-</div></div>
+</div>
 
 <script>
-document.getElementById("clueText").textContent="TEAM 3 CLUE PLACEHOLDER — replace with your next clue.";
-const TARGET=["F4","E4","D4","C4","D4","E4","F4","E4","D4","C4"];
+  document.getElementById("clueText").textContent="TEAM 3 CLUE PLACEHOLDER — replace with your next clue.";
 
-(function makeSnow(){
-  const snow=document.getElementById("snow"); const flakes=34;
-  for(let i=0;i<flakes;i++){
-    const f=document.createElement("div"); f.className="flake";
-    const left=Math.random()*100,size=3+Math.random()*7,dur=6+Math.random()*8,dx=(Math.random()*60-30)+"vw",delay=(-Math.random()*dur)+"s";
-    f.style.left=left+"vw"; f.style.width=size+"px"; f.style.height=size+"px"; f.style.setProperty("--dx",dx);
-    f.style.animationDuration=dur+"s"; f.style.animationDelay=delay; f.style.opacity=(0.30+Math.random()*0.60).toFixed(2);
-    snow.appendChild(f);
+  // Notes: E F G G C A G | F D C
+  const TARGET=["E4","F4","G4","G4","C4","A4","G4","F4","D4","C4"];
+
+  (function makeSnow(){
+    const snow=document.getElementById("snow"), flakes=34;
+    for(let i=0;i<flakes;i++){
+      const f=document.createElement("div"); f.className="flake";
+      const left=Math.random()*100,size=3+Math.random()*7,dur=6+Math.random()*8,dx=(Math.random()*60-30)+"vw",delay=(-Math.random()*dur)+"s";
+      f.style.left=left+"vw"; f.style.width=size+"px"; f.style.height=size+"px"; f.style.setProperty("--dx",dx);
+      f.style.animationDuration=dur+"s"; f.style.animationDelay=delay; f.style.opacity=(0.30+Math.random()*0.60).toFixed(2);
+      snow.appendChild(f);
+    }
+  })();
+
+  let ac=null;
+  const freq={"C4":261.63,"C#4":277.18,"D4":293.66,"D#4":311.13,"E4":329.63,"F4":349.23,"F#4":369.99,"G4":392.00,"G#4":415.30,"A4":440.00,"A#4":466.16,"B4":493.88,"C5":523.25};
+  function ensureAC(){ if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); }
+  function play(note,ms=150){
+    ensureAC();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type="triangle"; o.frequency.value=freq[note]??440;
+    const now=ac.currentTime;
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(0.14,now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+ms/1000);
+    o.connect(g); g.connect(ac.destination);
+    o.start(now); o.stop(now+ms/1000+0.03);
   }
-})();
 
-let ac=null;
-const freq={"C4":261.63,"C#4":277.18,"D4":293.66,"D#4":311.13,"E4":329.63,"F4":349.23,"F#4":369.99,"G4":392.00,"G#4":415.30,"A4":440.00,"A#4":466.16,"B4":493.88,"C5":523.25};
-function ensureAC(){ if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); }
-function play(note,ms=150){ ensureAC(); const o=ac.createOscillator(),g=ac.createGain(); o.type="triangle"; o.frequency.value=freq[note]??440;
-  const now=ac.currentTime; g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(0.14,now+0.02); g.gain.exponentialRampToValueAtTime(0.0001,now+ms/1000);
-  o.connect(g); g.connect(ac.destination); o.start(now); o.stop(now+ms/1000+0.03);
-}
-
-let idx=0;
-function keyEl(note){ return document.querySelector(`[data-note="${CSS.escape(note)}"]`); }
-function setStartIndicator(note){
-  document.querySelectorAll(".start-arrow").forEach(x=>x.remove());
-  document.querySelectorAll(".start-pulse").forEach(x=>x.classList.remove("start-pulse"));
-  const el=keyEl(note); if(!el) return;
-  el.classList.add("active-green","start-pulse");
-  const arrow=document.createElement("div"); arrow.className="start-arrow"; el.appendChild(arrow);
-}
-function clearStartIndicator(note){
-  const el=keyEl(note); if(!el) return;
-  el.classList.remove("active-green","start-pulse");
-  const arrow=el.querySelector(".start-arrow"); if(arrow) arrow.remove();
-}
-setStartIndicator(TARGET[0]);
-
-function blink(note,cls,times=3,interval=140){
-  const el=keyEl(note); if(!el) return;
-  let t=0; const id=setInterval(()=>{ el.classList.toggle(cls); t++; if(t>=times*2){ el.classList.remove(cls); clearInterval(id);} },interval);
-}
-
-function press(note){
-  play(note);
-  const expected=TARGET[idx];
-  if(note===expected){
-    if(idx===0) clearStartIndicator(TARGET[0]);
-    const el=keyEl(note); if(el){ el.classList.add("active-green"); setTimeout(()=>el.classList.remove("active-green"),160); }
-    idx++; if(idx>=TARGET.length) unlock(); return;
+  let idx=0;
+  function keyEl(note){ return document.querySelector(`[data-note="${CSS.escape(note)}"]`); }
+  function setStartIndicator(note){
+    document.querySelectorAll(".start-arrow").forEach(x=>x.remove());
+    document.querySelectorAll(".start-pulse").forEach(x=>x.classList.remove("start-pulse"));
+    const el=keyEl(note); if(!el) return;
+    el.classList.add("active-green","start-pulse");
+    const arrow=document.createElement("div"); arrow.className="start-arrow"; el.appendChild(arrow);
   }
-  blink(note,"active-red",3,140);
-  blink(expected,"active-green",3,140);
-  idx=0; setTimeout(()=>setStartIndicator(TARGET[0]),520);
-}
+  function clearStartIndicator(note){
+    const el=keyEl(note); if(!el) return;
+    el.classList.remove("active-green","start-pulse");
+    const arrow=el.querySelector(".start-arrow"); if(arrow) arrow.remove();
+  }
+  setStartIndicator(TARGET[0]);
 
-function unlock(){
-  document.getElementById("playScreen").style.display="none";
-  document.getElementById("doneScreen").style.display="flex";
-  document.getElementById("pianoBar").style.display="none";
-}
+  function blink(note,cls,times=3,interval=140){
+    const el=keyEl(note); if(!el) return;
+    let t=0;
+    const id=setInterval(()=>{ el.classList.toggle(cls); t++; if(t>=times*2){ el.classList.remove(cls); clearInterval(id);} },interval);
+  }
+
+  function press(note){
+    play(note);
+    const expected=TARGET[idx];
+
+    if(note===expected){
+      if(idx===0) clearStartIndicator(TARGET[0]);
+      const el=keyEl(note); if(el){ el.classList.add("active-green"); setTimeout(()=>el.classList.remove("active-green"),160); }
+      idx++; if(idx>=TARGET.length) unlock(); return;
+    }
+
+    blink(note,"active-red",3,140);
+    blink(expected,"active-green",3,140);
+    idx=0; setTimeout(()=>setStartIndicator(TARGET[0]),520);
+  }
+
+  function unlock(){
+    document.getElementById("playScreen").style.display="none";
+    document.getElementById("doneScreen").style.display="flex";
+    document.getElementById("pianoBar").style.display="none";
+  }
 </script>
 </body>
 </html>
