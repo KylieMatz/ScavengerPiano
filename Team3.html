@@ -24,7 +24,14 @@
   .flake{position:absolute;top:-10vh;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.92);box-shadow:0 0 10px rgba(255,255,255,0.18);animation:fall linear infinite;}
   @keyframes fall{to{transform:translate3d(var(--dx),115vh,0);}}
   .wrap{min-height:100svh;display:flex;flex-direction:column;padding-bottom:calc(var(--keyH)+24px);box-sizing:border-box;position:relative;z-index:2;}
-  .lyrics-area{flex:1;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;}
+ .lyrics-area{
+  flex: 1;
+  display: flex;
+  align-items: center;      /* vertical center */
+  justify-content: center;  /* horizontal center */
+  padding: 18px;
+  box-sizing: border-box;
+}
   .lyrics{width:min(900px,94vw);background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.22);border-radius:22px;padding:20px 18px;
     font-size:clamp(26px,3.8vw,40px);font-weight:900;line-height:1.22;letter-spacing:0.2px;white-space:pre-line;text-align:center;text-shadow:0 8px 20px rgba(0,0,0,0.35);backdrop-filter:blur(6px);}
   .done{display:none;flex:1;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;}
