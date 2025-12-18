@@ -62,9 +62,8 @@
     text-shadow:0 8px 20px rgba(0,0,0,0.35); backdrop-filter: blur(6px);
   }
 
-  /* Image + overlay text */
+  /* Image + solution text (below image) */
   .img-wrap{
-    position:relative;
     width:min(820px, 92vw);
     margin:0 auto;
   }
@@ -75,19 +74,16 @@
     border-radius:18px;
     border:1px solid rgba(255,255,255,0.22);
   }
-  .img-overlay{
-    position:absolute;
-    left:14px;
-    right:14px;
-    top:14px;
-    padding:12px 14px;
-    border-radius:14px;
-    background:rgba(0,0,0,0.55);
-    border:1px solid rgba(255,255,255,0.22);
-    font-size:clamp(18px, 2.2vw, 28px);
-    font-weight:900;
-    text-align:center;
-    text-shadow:0 8px 20px rgba(0,0,0,0.35);
+  .solution-text{
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.22);
+    font-size: clamp(18px, 2.2vw, 28px);
+    font-weight: 900;
+    text-align: center;
+    text-shadow: 0 8px 20px rgba(0,0,0,0.35);
   }
 
   .piano{ position:fixed; left:0; right:0; bottom:0; padding:var(--pianoPad);
@@ -137,16 +133,18 @@
 oh what fun it is to ride in a one horse open sleigh!</div>
   </div>
 
-<div class="done" id="doneScreen">
-  <div class="card">
-<div class="img-wrap">
-  <img src="images/pigpen.png" alt="Cipher key" class="clue-img">
-</div>
+  <div class="done" id="doneScreen">
+    <div class="card">
+      <div class="img-wrap">
+        <img src="images/pigpen.png" alt="Cipher key" class="clue-img">
+      </div>
 
-<div class="solution-text">
-  You will need this information soon!
+      <div class="solution-text">
+        You will need this information soon!
+      </div>
+    </div>
+  </div>
 </div>
-
 
 <div class="piano" id="pianoBar">
   <div class="piano-inner">
