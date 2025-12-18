@@ -141,7 +141,8 @@ and a Happy New Year!</div>
 </div>
 
 <script>
-  document.getElementById("clueText").textContent = "TEAM 2 CLUE PLACEHOLDER — replace with your next clue.";
+const clueText = document.getElementById("clueText");
+if (clueText) clueText.textContent = "";
 
   // Notes: C F F G F E D D | D G G A G F E C
   const TARGET = ["C4","F4","F4","G4","F4","E4","D4","D4","D4","G4","G4","A4","G4","F4","E4","C4"];
