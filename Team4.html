@@ -94,7 +94,8 @@ Long lay the world in sin and error pining.
 </div>
 
 <script>
-  document.getElementById("clueText").textContent="TEAM 4 CLUE PLACEHOLDER — replace with your next clue.";
+const clueText = document.getElementById("clueText");
+if (clueText) clueText.textContent = "";
 
   // Notes: E E E G | G A A F A C' G  (C' = C5)
   const TARGET=["E4","E4","E4","G4","G4","A4","A4","F4","A4","C5","G4"];
